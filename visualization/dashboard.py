@@ -3,7 +3,7 @@ import sqlite3
 import pandas as pd
 import os
 
-# 1. CONFIGURACION DE LA PAGINA
+# Configuracion de la pagina
 st.set_page_config(
     page_title="Tech Monitor",
     layout="wide"
@@ -32,7 +32,7 @@ def load_data():
         st.error(f"Error al leer la base de datos: {e}")
         return pd.DataFrame()
 
-# --- TITULO Y DESCRIPCION ---
+# Titulo y descripcion
 st.title("Monitor de Laptops Refurbished")
 st.markdown("""
 Este panel muestra los datos procesados de Amazon, eBay y Newegg. 
@@ -42,7 +42,7 @@ Filtra por especificaciones tecnicas para encontrar las mejores ofertas.
 df = load_data()
 
 if not df.empty:
-    # --- BARRA LATERAL: FILTROS ---
+    # Barra lateral de los filtros
     st.sidebar.header("Filtros de Busqueda")
     
     # Filtro por Marca
@@ -50,7 +50,6 @@ if not df.empty:
     marcas_sel = st.sidebar.multiselect("Marcas", marcas_disponibles, default=marcas_disponibles)
     
     # Filtro por RAM
-    # Nos aseguramos de que ram_gb sea numerico y eliminamos nulos para el slider
     df_ram = df.dropna(subset=['ram_gb'])
     if not df_ram.empty:
         ram_list = sorted([int(x) for x in df_ram['ram_gb'].unique()])
@@ -69,7 +68,7 @@ if not df.empty:
     # Filtro por Plataforma
     plataformas = st.sidebar.multiselect("Plataformas", df['platform'].unique(), default=df['platform'].unique())
 
-    # --- APLICAR LOGICA DE FILTRADO ---
+    # Logica del filtrado
     df_filtered = df[
         (df['brand'].isin(marcas_sel)) & 
         (df['ram_gb'] >= ram_min) & 
@@ -77,7 +76,7 @@ if not df.empty:
         (df['platform'].isin(plataformas))
     ]
 
-    # --- METRICAS PRINCIPALES ---
+    # Metricas principales
     m1, m2, m3 = st.columns(3)
     m1.metric("Laptops encontradas", len(df_filtered))
     m2.metric("Precio Promedio", f"${df_filtered['price'].mean():.2f}")
@@ -86,7 +85,7 @@ if not df.empty:
         mejor_oferta = df_filtered.loc[df_filtered['price'].idxmin()]
         m3.metric("Precio mas bajo", f"${mejor_oferta['price']:.2f}")
 
-    # --- VISUALIZACION DE DATOS ---
+    # Visualizacion de datos
     st.subheader("Inventario Detectado")
     
     # Configuracion de columnas para que la URL sea un link
@@ -102,7 +101,7 @@ if not df.empty:
         hide_index=True
     )
 
-    # --- GRAFICOS ---
+    # Graficos
     st.divider()
     c1, c2 = st.columns(2)
     
@@ -119,5 +118,5 @@ if not df.empty:
 else:
     st.info("La base de datos esta vacia o no existe. Ejecuta data_cleaning.py para procesar los archivos JSON.")
 
-# Pie de pagina
+
 st.caption("Pixor Tech Data Pipeline - Dashboard v1.0")

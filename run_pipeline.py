@@ -116,9 +116,6 @@ def run_pipeline_completo():
 
 def mostrar_menu():
     """Muestra el menu interactivo"""
-    print("\n" + "="*60)
-    print("  TECH PRICE PIPELINE - ORQUESTADOR INTERACTIVO")
-    print("="*60)
     print("\nOpciones disponibles:")
     print("  1. Ejecutar pipeline completo (Amazon + eBay + Newegg + ETL + Dashboard)")
     print("  2. Ejecutar solo Amazon + ETL + Dashboard")
