@@ -6,10 +6,12 @@ from selenium.webdriver.common.keys import Keys
 import json
 import time
 import os
+import sys
 from datetime import datetime
 
 # Configuracion de la localizacion de amazon
 def set_location(driver, wait):
+    """Configura la localizacion de Amazon en USA especificamente en Miami"""
     try:
         print("Cambiando ubicacion a Miami (33101)...")
         loc_button = wait.until(EC.element_to_be_clickable((By.ID, "nav-global-location-popover-link")))
@@ -32,6 +34,7 @@ def set_location(driver, wait):
 
 # Scraper de Amazon
 def scrape_amazon(search_term, pages=1):
+    """Realiza el scraping de amazon para una un producto en una catidad dada de paginas"""
     print(f"\n{'='*5}INICIANDO SCRAPER AMAZON{'='*5}\n")
     
     options = uc.ChromeOptions()
@@ -92,4 +95,16 @@ def scrape_amazon(search_term, pages=1):
         print(f"Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
 
 if __name__ == "__main__":
-    scrape_amazon("Laptop Refurbished", pages=3)
+    # Leer argumentos de la busqueda
+    if len(sys.argv) > 1:
+        search_term = sys.argv[1]
+        if len(sys.argv) > 2:
+            pages = int(sys.argv[2])
+        else:
+            pages = 3
+    else:
+        # Argumentos por defecto en caso de no ingresar ninguno desde el orquestador
+        search_term = "Laptop Refurbished"
+        pages = 3
+
+    scrape_amazon(search_term, pages)

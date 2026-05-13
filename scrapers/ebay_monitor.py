@@ -6,10 +6,12 @@ import json
 import time
 import random
 import os
+import sys
 from datetime import datetime
 
 # Escraper de Ebay
-def scrape_ebay(search_term, pages=1):
+def scrape_ebay(search_term, pages):
+    """"Realiza el scraping de Ebay para un teermino y cantidad de paginas dadas"""
     print(f"\n{'='*5}INICIANDO SCRAPER EBAY{'='*5}\n")
     
     options = uc.ChromeOptions()
@@ -142,4 +144,16 @@ def scrape_ebay(search_term, pages=1):
     return all_products
 
 if __name__ == "__main__":
-    scrape_ebay("Laptops Refurbished", pages=3)
+    # Leer argumentos de la busqueda
+    if len(sys.argv) > 1:
+        search_term = sys.argv[1]
+        if len(sys.argv) > 2:
+            pages = int(sys.argv[2])
+        else:
+            pages = 3
+    else:
+        # Argumento por defento en caso de no ingresar ninguno desde el orquestador
+        search_term = "Laptop Refurbished"
+        pages = 3
+
+    scrape_ebay(search_term, pages)

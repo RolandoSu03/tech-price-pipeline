@@ -6,10 +6,12 @@ import json
 import time
 import random
 import os
+import sys
 from datetime import datetime
 
 # Scraper de Newegg
 def scrape_newegg(search_term, pages=1):
+    """Realiza el scraping de newegg para un termino dado"""
     print(f"\n{'='*5}INICIANDO SCRAPER NEWEGG{'='*5}\n")
     options = uc.ChromeOptions()
     options.add_argument('--start-maximized')
@@ -68,4 +70,16 @@ def scrape_newegg(search_term, pages=1):
         print(f"Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
 
 if __name__ == "__main__":
-    scrape_newegg("Laptop Refurbished", pages=3)
+    # Leer argumentos de la busqueda
+    if len(sys.argv) > 1:
+        search_term = sys.argv[1]
+        if len(sys.argv) > 2:
+            pages = int(sys.argv[2])
+        else:
+            pages = 3
+    else:
+        # Argumentos por defecto en caso de no ingresar ninguno desde el orquestador
+        search_term = "Laptop Refurbished"
+        pages = 3
+
+    scrape_newegg(search_term, pages)
