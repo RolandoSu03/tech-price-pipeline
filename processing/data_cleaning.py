@@ -37,96 +37,124 @@ def parse_to_gb(value_str):
 
 def extract_ram(title):
     """
-    Extrae la RAM del título de forma más robusta.
-    Patrones soportados:
-    - 8GB, 16 GB, 32GB DDR4, 64GB RAM
-    - 12G, 16G (sin B)
-    - 8 GB LPDDR4X, 32 GB (soldado)
-    - Rangos: 4-256 GB
+    Extrae la RAM de forma robusta, evitando confundir con storage o números de modelo.
+    - Busca patrones con 'RAM', 'DDR', 'LPDDR', 'SODIMM'
+    - Busca el primer número entre 4 y 64 GB que NO esté cerca de 'SSD', 'HDD', 'NVMe'
+    - Si solo hay un número y es >=128, no es RAM.
     """
     if not title or pd.isna(title):
         return None
 
-    title_upper = title.upper().replace(',', ' ').replace('  ', ' ')
+    title_norm = title.upper().replace('GO', 'GB').replace(',', ' ').replace('  ', ' ')
 
-    # Patrones ordenados de más específicos a más generales
-    patterns = [
-        # Ej: 32GB RAM DDR4, 16GB RAM
+    # Patrones específicos de RAM (muy fiables)
+    specific_patterns = [
         r'(\d+)\s*GB\s*RAM',
         r'RAM\s*(\d+)\s*GB',
-        # Ej: 16 GB DDR4, 8GB (soldado)
-        r'(\d+)\s*GB\s*(?:DDR\d+|LPDDR\d*|SODIMM)?',
-        # Ej: 12G, 16G (solo G mayúscula)
-        r'(\d+)\s*G\s*(?:RAM|DDR)?',
-        # Ej: 64GB (sin nada alrededor) - pero evitando capturar "256GB" que es storage
-        r'(\d+)\s*GB(?!\s*(?:SSD|HDD|STORAGE|NVME|PCI))',
+        r'(\d+)\s*GB\s*(?:DDR\d+|LPDDR\d*|SODIMM)',
+        r'(\d+)\s*G\s*RAM',
     ]
+    for pat in specific_patterns:
+        m = re.search(pat, title_norm)
+        if m:
+            val = int(m.group(1))
+            if 4 <= val <= 128:
+                return val
 
-    for pattern in patterns:
-        match = re.search(pattern, title_upper)
-        if match:
-            ram_value = int(match.group(1))
-            # Rango realista para laptops refurbished: 4GB a 256GB
-            if 4 <= ram_value <= 256:
-                return ram_value
+    # Buscar todos los números con GB
+    matches = list(re.finditer(r'(\d+)\s*GB\b', title_norm))
+    if not matches:
+        return None
 
-    # Si no se encontró, buscar patrones con espacio: "16 GB"
-    match = re.search(r'(\d+)\s+GB', title_upper)
-    if match:
-        val = int(match.group(1))
-        if 4 <= val <= 256:
-            return val
+    # Evaluar cada match de menor a mayor posición
+    for m in matches:
+        val = int(m.group(1))
+        # La RAM suele estar entre 4 y 64 GB (a veces 128 en gama alta, pero raro)
+        if val > 128:
+            continue  # demasiado grande para RAM
+        if val < 4:
+            continue
+
+        # Verificar contexto alrededor del número
+        start = max(0, m.start() - 15)
+        end = min(len(title_norm), m.end() + 15)
+        context = title_norm[start:end]
+
+        # Si cerca hay palabras de almacenamiento, no es RAM
+        if re.search(r'SSD|HDD|NVME|EMMC|FLASH|STORAGE', context):
+            continue
+        # Si cerca hay palabras de modelo (como "G7", "G2", "PRO", "BOOK"), podría ser modelo, no RAM
+        if re.search(r'G\d+|PROBOOK|ELITEBOOK|LATITUDE|THINKPAD', context):
+            # Pero si el número es pequeño (4,8,16) y está aislado, sí puede ser RAM
+            if val <= 16:
+                # Aún así, verificar que no sea parte de "255 G7" donde 255 es modelo
+                if val > 32:
+                    continue
+                return val
+            continue
+
+        # Si llegamos aquí, es candidato
+        return val
 
     return None
 
 
 def extract_storage(title):
     """
-    Extrae el almacenamiento del título (disco duro o SSD).
-    Patrones soportados:
-    - 256GB, 512 GB, 1TB, 2TB
-    - 128GB SSD, 1TB HDD, 512GB NVMe, 256GB PCIe
-    - 240GB, 500GB, 750GB (casos raros pero posibles)
+    Extrae el almacenamiento de forma robusta.
+    - Busca números con TB/GB cerca de palabras clave (SSD, HDD, NVMe).
+    - Si hay múltiples números, toma el último que sea >= 32 GB.
+    - Si solo hay un número y es >= 32, es storage.
+    - Ignora números pequeños (<32) a menos que tengan palabra clave.
     """
     if not title or pd.isna(title):
         return None
 
-    title_upper = title.upper().replace(',', ' ').replace('  ', ' ')
+    title_norm = title.upper().replace('GO', 'GB').replace(',', ' ').replace('  ', ' ')
 
-    # Patrones: primero capturar con unidad explícita (TB/GB) y tipo de disco opcional
-    # Ejemplo: 1TB, 512GB, 2TB, 256GB SSD, 1TB HDD, 512GB NVMe
-    patterns = [
-        # Con unidad TB o GB, capturar el valor y la unidad
-        r'(\d+(?:\.\d+)?)\s*(TB|GB)\s*(?:SSD|HDD|NVME|PCI)?',
-        r'(\d+(?:\.\d+)?)\s*(TB|GB)(?=\s|$|\)|\,)',
-        r'(\d+(?:\.\d+)?)\s*(TB|GB)\s+(?:SSD|HDD|NVME|PCI)',
-    ]
+    # Casos sin disco
+    if re.search(r'SIN DISCO|NO DRIVE|SANS DISQUE|OHNE FESTPLATTE', title_norm):
+        return None
 
-    for pattern in patterns:
-        match = re.search(pattern, title_upper)
-        if match:
-            value = float(match.group(1))
-            unit = match.group(2)
-            if unit == "TB":
-                if 1 <= value <= 8:  # Discos de hasta 8TB en refurbished
-                    return int(value * 1024)
-            elif unit == "GB":
-                if 32 <= value <= 4096:  # 32GB a 4TB
-                    return int(value)
+    # Patrones con unidad explícita TB/GB
+    matches = list(re.finditer(r'(\d+(?:\.\d+)?)\s*(TB|GB)\b', title_norm))
+    if not matches:
+        return None
 
-    # Patrón más flexible: número seguido de GB sin espacio, que no sea parte de RAM
-    # Evitar falsos positivos con RAM (ya tenemos ram separada)
-    match = re.search(r'\b(\d+)\s*GB\b(?!.*RAM)', title_upper)
-    if match:
-        val = int(match.group(1))
-        if 32 <= val <= 4096:
-            return val
+    # Función para validar rango
+    def is_valid_storage(val, unit):
+        if unit == 'TB':
+            return 1 <= val <= 8
+        else:  # GB
+            return 32 <= val <= 4096
 
-    match = re.search(r'\b(\d+)\s*TB\b', title_upper)
-    if match:
-        val = float(match.group(1))
-        if 1 <= val <= 8:
-            return int(val * 1024)
+    # Primero buscar matches cerca de palabras clave de almacenamiento
+    for m in matches:
+        val = float(m.group(1))
+        unit = m.group(2)
+        if not is_valid_storage(val, unit):
+            continue
+        start = max(0, m.start() - 10)
+        end = min(len(title_norm), m.end() + 10)
+        context = title_norm[start:end]
+        if re.search(r'SSD|HDD|NVME|EMMC|FLASH|STORAGE|DISCO', context):
+            if unit == 'TB':
+                return int(val * 1024)
+            else:
+                return int(val)
+
+    # Si no, tomar el último match que sea >= 32 GB (asumiendo que es storage)
+    for m in reversed(matches):
+        val = float(m.group(1))
+        unit = m.group(2)
+        if is_valid_storage(val, unit):
+            # Si es un número pequeño (<32) pero es el último, solo si hay palabra clave (ya lo buscamos)
+            if val < 32 and unit == 'GB':
+                continue
+            if unit == 'TB':
+                return int(val * 1024)
+            else:
+                return int(val)
 
     return None
 
