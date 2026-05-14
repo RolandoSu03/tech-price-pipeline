@@ -1,7 +1,18 @@
 import json
 import os
 from datetime import datetime
+import logging
 
+# Configuracion del logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("pipeline.log"), # Guarda en archivo
+        logging.StreamHandler()              # Muestra en consola
+    ]
+)
+logger = logging.getLogger("DataPipeline")
 
 def save_to_json(new_data, platform, search_term):
     """
@@ -38,6 +49,5 @@ def save_to_json(new_data, platform, search_term):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(combined_data, f, indent=4, ensure_ascii=False)
 
-    print(f"\n{'=' * 5}")
-    print(f"[{platform.upper()}] Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
-    print(f"{'=' * 5}\n")
+    logger.info(f"[{platform.upper()}] Archivo actualizado: {filename}")
+    logger.info(f"[{platform.upper()}] Total acumulado: {len(combined_data)} productos.")
