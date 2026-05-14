@@ -2,12 +2,11 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import json
 import time
 import random
-import os
 import sys
 from datetime import datetime
+from utils import save_to_json
 
 # Scraper de Newegg
 def scrape_newegg(search_term, pages=1):
@@ -46,28 +45,10 @@ def scrape_newegg(search_term, pages=1):
     finally:
         driver.quit()
 
-    if all_products:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        data_dir = os.path.join(script_dir, '..', 'data')
-        os.makedirs(data_dir, exist_ok=True)
-        
-        date_str = datetime.now().strftime("%Y%m%d")
-        safe_name = search_term.replace(' ', '_').lower()
-        filename = f"raw_newegg_{safe_name}_{date_str}.json"
-        filepath = os.path.join(data_dir, filename)
-        
-        existing_data = []
-        if os.path.exists(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                try:
-                    existing_data = json.load(f)
-                except: existing_data = []
-        
-        combined_data = existing_data + all_products
-        
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(combined_data, f, indent=4, ensure_ascii=False)
-        print(f"Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
+    # Guardando los datos en un archivo JSON
+    save_to_json(all_products,'newegg',search_term)
+
+    return all_products
 
 if __name__ == "__main__":
     # Leer argumentos de la busqueda

@@ -2,10 +2,8 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import json
 import time
 import random
-import os
 import sys
 from datetime import datetime
 from utils import save_to_json
@@ -108,7 +106,9 @@ def scrape_ebay(search_term, pages):
         driver.quit()
     
     # Guardar resultados 
-    save_to_json(all_products,'ebay',search_term)
+    save_to_json(all_products,'amazon',search_term)
+
+    return all_products
 
 if __name__ == "__main__":
     # Leer argumentos de la busqueda
