@@ -106,7 +106,7 @@ def scrape_ebay(search_term, pages):
         driver.quit()
     
     # Guardar resultados 
-    save_to_json(all_products,'amazon',search_term)
+    save_to_json(all_products,'ebay',search_term)
 
     return all_products
 
