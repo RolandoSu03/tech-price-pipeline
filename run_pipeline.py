@@ -6,13 +6,19 @@ from datetime import datetime
 
 
 def print_header(message):
+    """
+    Imprime el message por la teerminal
+    """
     print("\n" + "=" * 60)
     print(f"  {message}")
     print("=" * 60 + "\n")
 
 
 def run_script(script_path, description, extra_args=None):
-    """Ejecuta un script Python con argumentos extra"""
+    """
+    Ejecuta un script Python con argumentos extra
+    """
+    
     print_header(f"Ejecutando: {description}")
 
     cmd = [sys.executable, script_path]
