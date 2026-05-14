@@ -8,6 +8,7 @@ import time
 import os
 import sys
 from datetime import datetime
+from utils import save_to_json
 
 # Configuracion de la localizacion de amazon
 def set_location(driver, wait):
@@ -70,29 +71,7 @@ def scrape_amazon(search_term, pages=1):
     finally:
         driver.quit()
 
-    if all_products:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        data_dir = os.path.join(script_dir, '..', 'data')
-        os.makedirs(data_dir, exist_ok=True)
-        
-        date_str = datetime.now().strftime("%Y%m%d")
-        safe_name = search_term.replace(' ', '_').lower()
-        filename = f"raw_amazon_{safe_name}_{date_str}.json"
-        filepath = os.path.join(data_dir, filename)
-        
-        # Logica de acumulacion
-        existing_data = []
-        if os.path.exists(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                try:
-                    existing_data = json.load(f)
-                except: existing_data = []
-        
-        combined_data = existing_data + all_products
-        
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(combined_data, f, indent=4, ensure_ascii=False)
-        print(f"Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
+    save_to_json(all_products,'amazon',search_term)
 
 if __name__ == "__main__":
     # Leer argumentos de la busqueda
