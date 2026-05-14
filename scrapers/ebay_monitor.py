@@ -8,6 +8,7 @@ import random
 import os
 import sys
 from datetime import datetime
+from utils import save_to_json
 
 # Escraper de Ebay
 def scrape_ebay(search_term, pages):
@@ -107,41 +108,7 @@ def scrape_ebay(search_term, pages):
         driver.quit()
     
     # Guardar resultados 
-    if all_products:
-        # Obtener ruta a la carpeta data
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        data_dir = os.path.join(script_dir, '..', 'data')
-        os.makedirs(data_dir, exist_ok=True)
-        
-        # Nombre del archivo con fecha (igual que Amazon y Newegg)
-        date_str = datetime.now().strftime("%Y%m%d")
-        safe_name = search_term.replace(' ', '_').lower()
-        filename = f"raw_ebay_{safe_name}_{date_str}.json"
-        filepath = os.path.join(data_dir, filename)
-        
-        # Cargar datos existentes para acumular (igual que Amazon y Newegg)
-        existing_data = []
-        if os.path.exists(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                try:
-                    existing_data = json.load(f)
-                except:
-                    existing_data = []
-        
-        # Combinar datos existentes con nuevos
-        combined_data = existing_data + all_products
-        
-        # Guardar archivo actualizado
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(combined_data, f, indent=4, ensure_ascii=False)
-        
-        print(f"\n{'='*5}")
-        print(f"Archivo actualizado. Total productos en {filename}: {len(combined_data)}")
-        print(f"{'='*5}\n")
-    else:
-        print("No se encontraron productos para guardar.")
-    
-    return all_products
+    save_to_json(all_products,'ebay',search_term)
 
 if __name__ == "__main__":
     # Leer argumentos de la busqueda
