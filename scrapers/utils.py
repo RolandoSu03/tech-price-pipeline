@@ -11,7 +11,7 @@ def save_to_json(new_data, platform, search_term):
         print(f"[{platform.upper()}] No se encontraron productos para guardar.")
         return
 
-    # Obtener ruta a la carpeta data (subiendo un nivel desde scrapers/)
+    # Obtener ruta a la carpeta data
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(script_dir, '..', 'data')
     os.makedirs(data_dir, exist_ok=True)
