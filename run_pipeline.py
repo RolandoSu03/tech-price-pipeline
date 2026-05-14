@@ -4,7 +4,6 @@ import os
 import time
 from datetime import datetime
 
-
 def print_header(message):
     """
     Imprime el message por la teerminal
@@ -18,7 +17,7 @@ def run_script(script_path, description, extra_args=None):
     """
     Ejecuta un script Python con argumentos extra
     """
-    
+
     print_header(f"Ejecutando: {description}")
 
     cmd = [sys.executable, script_path]
