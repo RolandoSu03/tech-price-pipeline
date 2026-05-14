@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import sys
 from datetime import datetime
-from utils import save_to_json
+from utils import save_to_json,logger
 
 # Configuracion de la localizacion de amazon
 def set_location(driver, wait):
@@ -34,7 +34,7 @@ def set_location(driver, wait):
 # Scraper de Amazon
 def scrape_amazon(search_term, pages=1):
     """Realiza el scraping de amazon para una un producto en una catidad dada de paginas"""
-    print(f"\n{'='*5}INICIANDO SCRAPER AMAZON{'='*5}\n")
+    logger.info(f"Iniciando scraper de Amazon para: {search_term}")
     
     options = uc.ChromeOptions()
     options.add_argument('--start-maximized')
@@ -66,7 +66,12 @@ def scrape_amazon(search_term, pages=1):
                         })
                 except: continue
             print(f"Pagina {page}: {len(all_products)} productos nuevos encontrados.")
+
+    except Exception as e:
+        logger.error(f"Error crítico en Amazon: {e}")
+
     finally:
+        logger.info("Cerrando navegador de Amazon.")
         driver.quit()
 
     # Guardando los datos en un archivo JSON

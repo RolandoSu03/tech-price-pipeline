@@ -6,12 +6,13 @@ import time
 import random
 import sys
 from datetime import datetime
-from utils import save_to_json
+from utils import save_to_json,logger
 
 # Scraper de Newegg
 def scrape_newegg(search_term, pages=1):
     """Realiza el scraping de newegg para un termino dado"""
-    print(f"\n{'='*5}INICIANDO SCRAPER NEWEGG{'='*5}\n")
+    logger.info(f"Iniciando scraper de Newegg para: {search_term}")
+
     options = uc.ChromeOptions()
     options.add_argument('--start-maximized')
     driver = uc.Chrome(options=options)
@@ -42,7 +43,10 @@ def scrape_newegg(search_term, pages=1):
                 except: continue
             print(f"Pagina {page}: {len(all_products)} productos nuevos encontrados.")
             time.sleep(random.uniform(5, 8))
+    except Exception as e:
+        logger.error(f"Error crítico en Newegg: {e}")
     finally:
+        logger.info("Cerrando navegador de Newegg.")
         driver.quit()
 
     # Guardando los datos en un archivo JSON

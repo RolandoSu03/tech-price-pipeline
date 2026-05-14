@@ -6,12 +6,12 @@ import time
 import random
 import sys
 from datetime import datetime
-from utils import save_to_json
+from utils import save_to_json,logger
 
 # Escraper de Ebay
 def scrape_ebay(search_term, pages):
     """"Realiza el scraping de Ebay para un teermino y cantidad de paginas dadas"""
-    print(f"\n{'='*5}INICIANDO SCRAPER EBAY{'='*5}\n")
+    logger.info(f"Iniciando scraper de eBay para: {search_term}")
     
     options = uc.ChromeOptions()
     options.add_argument('--start-maximized')
@@ -99,10 +99,10 @@ def scrape_ebay(search_term, pages):
                 time.sleep(sleep_time)
                 
     except Exception as e:
-        print(f"Error critico: {e}")
+        logger.error(f"Error crítico en eBay: {e}")
         
     finally:
-        print("Cerrando navegador...")
+        logger.info("Cerrando navegador de eBay.")
         driver.quit()
     
     # Guardar resultados 
