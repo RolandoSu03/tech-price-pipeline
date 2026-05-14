@@ -9,6 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
+@st.cache_data
 def load_data():
     """
     Se conecta a la base de datos en data/db/tech_prices_gold.db
