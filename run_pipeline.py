@@ -6,7 +6,7 @@ from datetime import datetime
 
 def print_header(message):
     """
-    Imprime el message por la teerminal
+    Imprime el message por la terminal
     """
     print("\n" + "=" * 60)
     print(f"  {message}")

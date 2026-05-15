@@ -26,7 +26,7 @@ def clean_price(price_str):
 def extract_capacities(title):
     """
     Extrae todos los valores de capacidad (RAM o almacenamiento) en GB.
-    Retorna lista de enteros ordenada de mayor a menor, ignorando valores fuera de rangos plausibles.
+    Retorna lista de enteros ordenada de mayor a menor, ignorando valores fuera de rangos posibles.
     """
     if not title or pd.isna(title):
         return []
@@ -269,7 +269,7 @@ def normalize_to_silver():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        # Crear tabla products si no existe (sin DROP, conservando datos antiguos)
+        # Crear tabla products si no existe
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS products
                        (
