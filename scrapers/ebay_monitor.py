@@ -34,6 +34,38 @@ def scrape_ebay(search_term, pages):
             except:
                 print("Tiempo de espera agotado o CAPTCHA detectado.")
                 continue
+
+            # Hacer click en el filtro de solo EE. UU
+            try:
+                # Buscar el enlace o radio button que dice "Sólo EE. UU." o "US Only"
+                # Posibles selectores:
+                selectores_usa = [
+                    "//span[contains(text(),'Sólo EE. UU.')]",
+                    "//span[contains(text(),'US Only')]",
+                    "//button[contains(@aria-label,'Sólo EE. UU.')]",
+                    "//a[contains(text(),'Sólo EE. UU.')]",
+                    "//label[contains(text(),'Sólo EE. UU.')]",
+                    "//span[contains(text(),'Estados Unidos')]"
+                ]
+                click_realizado = False
+                for selector in selectores_usa:
+                    try:
+                        elemento = wait.until(EC.element_to_be_clickable((By.XPATH, selector)))
+                        driver.execute_script("arguments[0].scrollIntoView(true);", elemento)
+                        time.sleep(0.5)
+                        elemento.click()
+                        print("Filtro 'Sólo EE. UU.' aplicado correctamente.")
+                        click_realizado = True
+                        # Esperar a que la página se recargue con el filtro
+                        time.sleep(3)
+                        break
+                    except:
+                        continue
+
+                if not click_realizado:
+                    logger.info(f"No se encontro el filtro de solo EE UU asi que se continuara sin el")
+            except Exception as e:
+                logger.error(f"Error al intentar aplicar el filtro de solo EEUU: {e}")
             
             # Scroll aleatorio para simular comportamiento humano
             for _ in range(3):
